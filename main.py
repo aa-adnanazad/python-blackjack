@@ -1,0 +1,88 @@
+import random
+import lib
+import table
+import time
+# Python blackjack main file
+
+player_money = 100
+round_number = 1
+playing = True
+
+
+while player_money and playing:
+
+    # Initial variables to hold cards
+    player_hand = []
+    dealer_hand = []
+    player_card_count = 0
+    dealer_card_count = 0
+
+    # For checking if both player and dealer is playing
+    # Either one of them will lose and end the round.
+    is_player_standing = True
+    is_dealer_standing = True
+    result = ''
+
+    # draw two cards for the player and dealer
+    for i in range(2):
+        player_hand.append(lib.draw_card())
+        dealer_hand.append(lib.draw_card())
+
+    # calculate the player score
+    player_card_count = lib.calculate_score(player_hand)
+    dealer_card_count = lib.calculate_score(dealer_hand)
+    action = 'h'
+
+    # first loop to keep dealing for the player
+    while player_card_count < 21 and action == 'h':
+        table.draw_table(dealer_hand, player_hand, True)
+        print("Round:", round_number)
+        print("Card total =", player_card_count)
+        print("Do you want to hit/stick?")
+        action = str.lower(input())
+        # if the player hits, draw a new card:
+        if action == 'h':
+            player_hand.append(lib.draw_card())
+            player_card_count = lib.calculate_score(player_hand)
+
+    if player_card_count == 21:
+        result = "BLACKJACK! YOU WIN!"
+        player_money += 20
+        is_dealer_standing = False
+
+    if player_card_count > 21:
+        result = "BUSTED! HOUSE WINS!"
+        player_money -= 20
+        is_player_standing = False
+
+    # player is still standing, deal the dealer:
+    while is_player_standing and is_dealer_standing:
+        # print the dealer and player cards:
+        print("Dealer is dealing...")
+        time.sleep(2)
+        table.draw_table(dealer_hand, player_hand, False)
+        print("Your card total =", player_card_count)
+        print("Dealer card total =", dealer_card_count)
+        if is_player_standing:
+            dealer_hand.append(lib.draw_card())
+            dealer_card_count = lib.calculate_score(dealer_hand)
+
+        if dealer_card_count > player_card_count:
+            is_player_standing = False
+            player_money -= 20
+            result = "HOUSE WINS!"
+
+        if dealer_card_count > 21:
+            is_dealer_standing = False
+            player_money += 20
+            result = "YOU WIN! (Dealer Busted)"
+
+    # Print the table at the end:
+    table.draw_table(dealer_hand, player_hand, False)
+    print("Your card total =", player_card_count)
+    print("Dealer card total =", dealer_card_count)
+    print(result, "Total money:", player_money)
+    cont = input("<<< CONTINUE? >>> y/n\n")
+    if str.lower(cont) == 'n':
+        playing = False
+    round_number += 1
